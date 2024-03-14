@@ -7,6 +7,21 @@ import (
 	"github.com/google/uuid"
 )
 
+type User struct {
+	Username string `json:"username" example:"johndoe" description:"The username of the user"`
+	Email    string `json:"email" example:"johndoe@gmail.com" description:"The email of the user"`
+	Password string `json:"password" example:"12345678" description:"The password of the user"`
+}
+
+// CreateUser godoc
+// @Summary Create a new user
+// @Description create a new user with the provided information
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Param user body User true "User to create" example("{\"username\": \"John Doe\", \"email\": \"johndoe@example.com\", \"password\": \"12345678\"}")
+// @Success 201 {object} model.User
+// @Router /user/ [post]
 func CreateUser(c *fiber.Ctx) error {
 	db := database.DB.Db
 	user := new(model.User)
@@ -24,6 +39,14 @@ func CreateUser(c *fiber.Ctx) error {
 	return c.Status(201).JSON(fiber.Map{"status": "success", "message": "User has been created", "data": user})
 }
 
+// GetAllUsers godoc
+// @Summary Get all users
+// @Description get details of all users
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} model.User
+// @Router /user/ [get]
 func GetAllUsers(c *fiber.Ctx) error {
 	db := database.DB.Db
 
@@ -37,6 +60,15 @@ func GetAllUsers(c *fiber.Ctx) error {
 	return c.Status(200).JSON(fiber.Map{"status": "sucess", "message": "Users Found", "data": users})
 }
 
+// GetSingleUser godoc
+// @Summary Get single user
+// @Description get details of user by ID
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Param id path int true "User ID"
+// @Success 200 {object} model.User
+// @Router /user/{id} [get]
 func GetSingleUser(c *fiber.Ctx) error {
 	db := database.DB.Db
 	id := c.Params("id")
@@ -51,6 +83,16 @@ func GetSingleUser(c *fiber.Ctx) error {
 	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "User Found", "data": user})
 }
 
+// UpdateUser godoc
+// @Summary Update an existing user
+// @Description update user's information by ID
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Param id path int true "User ID"
+// @Param user body User true "User information to update"
+// @Success 200 {object} model.User
+// @Router /user/{id} [put]
 func UpdateUser(c *fiber.Ctx) error {
 	type updateUser struct {
 		Username string `json:"username"`
@@ -79,6 +121,15 @@ func UpdateUser(c *fiber.Ctx) error {
 	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "users Found", "data": user})
 }
 
+// DeleteUserByID godoc
+// @Summary Delete a user
+// @Description delete a user by ID
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Param id path int true "User ID"
+// @Success 204 "User deleted"
+// @Router /user/{id} [delete]
 func DeleteUserByID(c *fiber.Ctx) error {
 	db := database.DB.Db
 	var user model.User

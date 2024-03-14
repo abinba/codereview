@@ -61,3 +61,13 @@ And then run the application with:
 ```bash
 go run .
 ```
+
+After setting up you can go to http://localhost:8080/swagger to see available endpoints.
+
+## Swagger
+
+To generate swagger, please run:
+
+```bash
+swag init --parseDependency --parseInternal
+```
