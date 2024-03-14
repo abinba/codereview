@@ -40,7 +40,7 @@ In order to run the app locally, make sure that you have the following:
 - Postgres database is up and running
 - `.env` file in the following format (please specify credentials of the database you created):
 ```bash
-DB_HOST=localhost
+DB_HOST=localhost # postgres, if you are running it in Docker
 DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=postgres
