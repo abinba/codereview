@@ -43,7 +43,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /user/:
+  /api/v1/user/:
     get:
       consumes:
       - application/json
@@ -81,7 +81,7 @@ paths:
       summary: Create a new user
       tags:
       - users
-  /user/{id}:
+  /api/v1/user/{id}:
     delete:
       consumes:
       - application/json

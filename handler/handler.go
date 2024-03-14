@@ -21,7 +21,7 @@ type User struct {
 // @Produce  json
 // @Param user body User true "User to create" example("{\"username\": \"John Doe\", \"email\": \"johndoe@example.com\", \"password\": \"12345678\"}")
 // @Success 201 {object} model.User
-// @Router /user/ [post]
+// @Router /api/v1/user/ [post]
 func CreateUser(c *fiber.Ctx) error {
 	db := database.DB.Db
 	user := new(model.User)
@@ -46,7 +46,7 @@ func CreateUser(c *fiber.Ctx) error {
 // @Accept  json
 // @Produce  json
 // @Success 200 {array} model.User
-// @Router /user/ [get]
+// @Router /api/v1/user/ [get]
 func GetAllUsers(c *fiber.Ctx) error {
 	db := database.DB.Db
 
@@ -68,7 +68,7 @@ func GetAllUsers(c *fiber.Ctx) error {
 // @Produce  json
 // @Param id path int true "User ID"
 // @Success 200 {object} model.User
-// @Router /user/{id} [get]
+// @Router /api/v1/user/{id} [get]
 func GetSingleUser(c *fiber.Ctx) error {
 	db := database.DB.Db
 	id := c.Params("id")
@@ -92,7 +92,7 @@ func GetSingleUser(c *fiber.Ctx) error {
 // @Param id path int true "User ID"
 // @Param user body User true "User information to update"
 // @Success 200 {object} model.User
-// @Router /user/{id} [put]
+// @Router /api/v1/user/{id} [put]
 func UpdateUser(c *fiber.Ctx) error {
 	type updateUser struct {
 		Username string `json:"username"`
@@ -129,7 +129,7 @@ func UpdateUser(c *fiber.Ctx) error {
 // @Produce  json
 // @Param id path int true "User ID"
 // @Success 204 "User deleted"
-// @Router /user/{id} [delete]
+// @Router /api/v1/user/{id} [delete]
 func DeleteUserByID(c *fiber.Ctx) error {
 	db := database.DB.Db
 	var user model.User
