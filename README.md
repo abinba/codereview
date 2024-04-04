@@ -36,6 +36,11 @@ DB_PASSWORD=postgres
 DB_NAME=codereview
 ```
 
+And ensure that you have `db.env` file with the following contents (input your own password):
+```bash
+POSTGRES_PASSWORD=postgres
+```
+
 ### Swagger
 
 To generate documentation based on declarative comments, [extension](https://github.com/gofiber/swagger) of GoFiber is used. To generate docs, use:
