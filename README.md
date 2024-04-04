@@ -36,6 +36,34 @@ DB_PASSWORD=postgres
 DB_NAME=codereview
 ```
 
+### Swagger
+
+To generate documentation based on declarative comments, [extension](https://github.com/gofiber/swagger) of GoFiber is used. To generate docs, use:
+
+```
+swag init --parseDependency --parseInternal
+```
+
+Go to http://localhost:8080/swagger for seeing the documentation.
+
+### Database Migrations
+
+To create a new migration revision, use [Atlas provider](https://github.com/ariga/atlas-provider-gorm) for GORM:
+```
+atlas migrate diff --env gorm 
+```
+
+To apply the migration, use:
+
+```
+atlas migrate apply -u "postgres://postgres:postgres@localhost:5432/codereview"
+```
+
+To downgrade:
+```
+atlas migrate down -u "postgres://postgres:postgres@localhost:5432/codereview" --env gorm
+```
+
 ### Docker
 
 To run the app, simply use `docker-compose`:
@@ -63,11 +91,3 @@ go run .
 ```
 
 After setting up you can go to http://localhost:8080/swagger to see available endpoints.
-
-## Swagger
-
-To generate swagger, please run:
-
-```bash
-swag init --parseDependency --parseInternal
-```

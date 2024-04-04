@@ -4,6 +4,184 @@
         "contact": {}
     },
     "paths": {
+        "/api/v1/code_snippet/": {
+            "get": {
+                "description": "Get all code snippets",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Code Snippets"
+                ],
+                "summary": "Get all code snippets",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.CodeSnippet"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a code snippet",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Code Snippets"
+                ],
+                "summary": "Create a code snippet",
+                "parameters": [
+                    {
+                        "description": "Code Snippet information to create",
+                        "name": "code_snippet",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.CodeSnippetForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.CodeSnippet"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/code_snippet/{id}": {
+            "get": {
+                "description": "Get a single code snippet by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Code Snippets"
+                ],
+                "summary": "Get a single code snippet",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Code Snippet ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.CodeSnippet"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a code snippet by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Code Snippets"
+                ],
+                "summary": "Delete a code snippet",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Code Snippet ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.CodeSnippet"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/program_language/": {
+            "get": {
+                "description": "Get all program languages",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Program Languages"
+                ],
+                "summary": "Get all program languages",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.ProgramLanguage"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a program language",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Program Languages"
+                ],
+                "summary": "Create a program language",
+                "parameters": [
+                    {
+                        "description": "Name of the program language",
+                        "name": "name",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ProgramLanguageForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.ProgramLanguage"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/user/": {
             "get": {
                 "description": "get details of all users",
@@ -162,32 +340,169 @@
         }
     },
     "definitions": {
-        "gorm.DeletedAt": {
+        "handler.CodeSnippetForm": {
             "type": "object",
             "properties": {
-                "time": {
+                "is_archived": {
+                    "type": "boolean"
+                },
+                "is_draft": {
+                    "type": "boolean"
+                },
+                "is_private": {
+                    "type": "boolean"
+                },
+                "program_language_id": {
                     "type": "string"
                 },
-                "valid": {
-                    "description": "Valid is true if Time is not NULL",
-                    "type": "boolean"
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.ProgramLanguageForm": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
                 }
             }
         },
         "handler.User": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "johndoe@gmail.com"
-                },
-                "password": {
-                    "type": "string",
-                    "example": "12345678"
-                },
                 "username": {
                     "type": "string",
                     "example": "johndoe"
+                }
+            }
+        },
+        "model.CodeSnippet": {
+            "description": "CodeSnippet is the model representing a code snippet in the system.",
+            "type": "object",
+            "properties": {
+                "codeSnippetID": {
+                    "type": "string"
+                },
+                "codeSnippetRatings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.CodeSnippetRating"
+                    }
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "isArchived": {
+                    "type": "boolean"
+                },
+                "isDraft": {
+                    "type": "boolean"
+                },
+                "isPrivate": {
+                    "type": "boolean"
+                },
+                "programLanguage": {
+                    "$ref": "#/definitions/model.ProgramLanguage"
+                },
+                "programLanguageID": {
+                    "type": "string"
+                },
+                "reviewComments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ReviewComment"
+                    }
+                },
+                "text": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.User"
+                },
+                "userID": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CodeSnippetRating": {
+            "description": "CodeSnippetRating is the model representing a rating for a code snippet.",
+            "type": "object",
+            "properties": {
+                "codeSnippet": {
+                    "$ref": "#/definitions/model.CodeSnippet"
+                },
+                "codeSnippetID": {
+                    "type": "string"
+                },
+                "codeSnippetRatingID": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.User"
+                },
+                "userID": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.ProgramLanguage": {
+            "description": "ProgramLanguage is the model representing a programming language in the system.",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "programLanguageID": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.ReviewComment": {
+            "description": "ReviewComment is the model representing a comment on a code snippet.",
+            "type": "object",
+            "properties": {
+                "codeSnippet": {
+                    "$ref": "#/definitions/model.CodeSnippet"
+                },
+                "codeSnippetID": {
+                    "type": "string"
+                },
+                "commentID": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "line": {
+                    "type": "integer"
+                },
+                "replyCommentID": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.User"
+                },
+                "userID": {
+                    "type": "string"
                 }
             }
         },
@@ -198,21 +513,16 @@
                 "createdAt": {
                     "type": "string"
                 },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
+                "isActive": {
+                    "type": "boolean"
                 },
-                "email": {
-                    "type": "string",
-                    "example": "johndoe@gmail.com"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "example": "12345678"
+                "isAnonymous": {
+                    "type": "boolean"
                 },
                 "updatedAt": {
+                    "type": "string"
+                },
+                "userID": {
                     "type": "string"
                 },
                 "username": {
