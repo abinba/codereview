@@ -1,22 +1,113 @@
 definitions:
-  gorm.DeletedAt:
+  handler.CodeSnippetForm:
     properties:
-      time:
-        type: string
-      valid:
-        description: Valid is true if Time is not NULL
+      is_archived:
         type: boolean
+      is_draft:
+        type: boolean
+      is_private:
+        type: boolean
+      program_language_id:
+        type: string
+      text:
+        type: string
+    type: object
+  handler.ProgramLanguageForm:
+    properties:
+      name:
+        type: string
     type: object
   handler.User:
     properties:
-      email:
-        example: johndoe@gmail.com
-        type: string
-      password:
-        example: "12345678"
-        type: string
       username:
         example: johndoe
+        type: string
+    type: object
+  model.CodeSnippet:
+    description: CodeSnippet is the model representing a code snippet in the system.
+    properties:
+      codeSnippetID:
+        type: string
+      codeSnippetRatings:
+        items:
+          $ref: '#/definitions/model.CodeSnippetRating'
+        type: array
+      createdAt:
+        type: string
+      isArchived:
+        type: boolean
+      isDraft:
+        type: boolean
+      isPrivate:
+        type: boolean
+      programLanguage:
+        $ref: '#/definitions/model.ProgramLanguage'
+      programLanguageID:
+        type: string
+      reviewComments:
+        items:
+          $ref: '#/definitions/model.ReviewComment'
+        type: array
+      text:
+        type: string
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+      userID:
+        type: string
+    type: object
+  model.CodeSnippetRating:
+    description: CodeSnippetRating is the model representing a rating for a code snippet.
+    properties:
+      codeSnippet:
+        $ref: '#/definitions/model.CodeSnippet'
+      codeSnippetID:
+        type: string
+      codeSnippetRatingID:
+        type: string
+      createdAt:
+        type: string
+      rating:
+        type: integer
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+      userID:
+        type: string
+    type: object
+  model.ProgramLanguage:
+    description: ProgramLanguage is the model representing a programming language
+      in the system.
+    properties:
+      name:
+        type: string
+      programLanguageID:
+        type: string
+    type: object
+  model.ReviewComment:
+    description: ReviewComment is the model representing a comment on a code snippet.
+    properties:
+      codeSnippet:
+        $ref: '#/definitions/model.CodeSnippet'
+      codeSnippetID:
+        type: string
+      commentID:
+        type: string
+      createdAt:
+        type: string
+      line:
+        type: integer
+      replyCommentID:
+        type: string
+      text:
+        type: string
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+      userID:
         type: string
     type: object
   model.User:
@@ -24,17 +115,13 @@ definitions:
     properties:
       createdAt:
         type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      email:
-        example: johndoe@gmail.com
-        type: string
-      id:
-        type: string
-      password:
-        example: "12345678"
-        type: string
+      isActive:
+        type: boolean
+      isAnonymous:
+        type: boolean
       updatedAt:
+        type: string
+      userID:
         type: string
       username:
         example: johndoe
@@ -43,6 +130,123 @@ definitions:
 info:
   contact: {}
 paths:
+  /api/v1/code_snippet/:
+    get:
+      consumes:
+      - application/json
+      description: Get all code snippets
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.CodeSnippet'
+            type: array
+      summary: Get all code snippets
+      tags:
+      - Code Snippets
+    post:
+      consumes:
+      - application/json
+      description: Create a code snippet
+      parameters:
+      - description: Code Snippet information to create
+        in: body
+        name: code_snippet
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CodeSnippetForm'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.CodeSnippet'
+      summary: Create a code snippet
+      tags:
+      - Code Snippets
+  /api/v1/code_snippet/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a code snippet by ID
+      parameters:
+      - description: Code Snippet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.CodeSnippet'
+      summary: Delete a code snippet
+      tags:
+      - Code Snippets
+    get:
+      consumes:
+      - application/json
+      description: Get a single code snippet by ID
+      parameters:
+      - description: Code Snippet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.CodeSnippet'
+      summary: Get a single code snippet
+      tags:
+      - Code Snippets
+  /api/v1/program_language/:
+    get:
+      consumes:
+      - application/json
+      description: Get all program languages
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.ProgramLanguage'
+            type: array
+      summary: Get all program languages
+      tags:
+      - Program Languages
+    post:
+      consumes:
+      - application/json
+      description: Create a program language
+      parameters:
+      - description: Name of the program language
+        in: body
+        name: name
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ProgramLanguageForm'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.ProgramLanguage'
+      summary: Create a program language
+      tags:
+      - Program Languages
   /api/v1/user/:
     get:
       consumes:

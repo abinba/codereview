@@ -9,8 +9,6 @@ import (
 
 type User struct {
 	Username string `json:"username" example:"johndoe" description:"The username of the user"`
-	Email    string `json:"email" example:"johndoe@gmail.com" description:"The email of the user"`
-	Password string `json:"password" example:"12345678" description:"The password of the user"`
 }
 
 // CreateUser godoc
@@ -19,7 +17,7 @@ type User struct {
 // @Tags users
 // @Accept  json
 // @Produce  json
-// @Param user body User true "User to create" example("{\"username\": \"John Doe\", \"email\": \"johndoe@example.com\", \"password\": \"12345678\"}")
+// @Param user body User true "User to create" example("{\"username\": \"John Doe\"}")
 // @Success 201 {object} model.User
 // @Router /api/v1/user/ [post]
 func CreateUser(c *fiber.Ctx) error {
@@ -74,9 +72,9 @@ func GetSingleUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 
 	var user model.User
-	db.Find(&user, "id = ?", id)
+	db.Find(&user, "user_id = ?", id)
 
-	if user.ID == uuid.Nil {
+	if user.UserID == uuid.Nil {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil})
 	}
 
@@ -102,9 +100,9 @@ func UpdateUser(c *fiber.Ctx) error {
 	var user model.User
 
 	id := c.Params("id")
-	db.Find(&user, "id = ?", id)
+	db.Find(&user, "user_id = ?", id)
 
-	if user.ID == uuid.Nil {
+	if user.UserID == uuid.Nil {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil})
 	}
 
@@ -134,9 +132,9 @@ func DeleteUserByID(c *fiber.Ctx) error {
 	db := database.DB.Db
 	var user model.User
 	id := c.Params("id")
-	db.Find(&user, "id = ?", id)
+	db.Find(&user, "user_id = ?", id)
 
-	if user.ID == uuid.Nil {
+	if user.UserID == uuid.Nil {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil})
 	}
 
