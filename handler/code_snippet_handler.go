@@ -35,7 +35,7 @@ func GetAllCodeSnippets(c *fiber.Ctx) error {
 	db := database.DB.Db
 
 	var code_snippets []model.CodeSnippet
-	db.Find(&code_snippets)
+	db.Find(&code_snippets).Order("created_at desc")
 
 	if len(code_snippets) == 0 {
 		return c.Status(404).JSON(fiber.Map{
