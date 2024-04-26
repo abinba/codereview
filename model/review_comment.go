@@ -10,13 +10,15 @@ import (
 // @Description ReviewComment is the model representing a comment on a code snippet.
 type ReviewComment struct {
 	CommentID      uuid.UUID `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	UserID         uuid.UUID
-	CodeSnippetID  uuid.UUID
-	ReplyCommentID uuid.UUID
-	Text           string
-	Line           int
+	UserID         *uuid.UUID
+	CodeSnippetVersionID  uuid.UUID `gorm:"not null"`
+	ReplyCommentID *uuid.UUID
+	Text           string `gorm:"not null"`
+	Line           *int
+	IsGenerated    bool      `gorm:"default:false"`
 	CreatedAt	   time.Time `gorm:"autoCreateTime"`
 	UpdatedAt	   time.Time `gorm:"autoUpdateTime"`
-	User           User
-	CodeSnippet    CodeSnippet
+	User           *User
+	CodeSnippetVersion    CodeSnippetVersion
+	ReplyComment   *ReviewComment
 }

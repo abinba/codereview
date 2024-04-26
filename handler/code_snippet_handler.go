@@ -8,11 +8,11 @@ import (
 )
 
 type CodeSnippetForm struct {
-	ProgramLanguageID uuid.UUID `json:"program_language_id" description:"The UUID of the program language"`
-	Text              string    `json:"text" description:"The text of the code snippet, its content"`
-	IsPrivate         bool      `json:"is_private" description:"Whether the code snippet is private"`
-	IsArchived        bool      `json:"is_archived" description:"Whether the code snippet is archived"`
-	IsDraft           bool      `json:"is_draft" description:"Whether the code snippet is a draft"`
+	UserID     uuid.UUID `json:"user_id" description:"UUID of the user"`
+	Title      string    `json:"title" description:"The title of the code snippet"`
+	IsPrivate  bool      `json:"is_private" description:"Whether the code snippet is private"`
+	IsArchived bool      `json:"is_archived" description:"Whether the code snippet is archived"`
+	IsDraft    bool      `json:"is_draft" description:"Whether the code snippet is a draft"`
 }
 
 type ProgramLanguageForm struct {
@@ -35,7 +35,12 @@ func GetAllCodeSnippets(c *fiber.Ctx) error {
 	db := database.DB.Db
 
 	var code_snippets []model.CodeSnippet
-	db.Find(&code_snippets).Order("created_at desc")
+	// TODO: Select only needed fields, exclude user.password :)
+	db.Preload("CodeSnippetVersions").
+		Preload("User").
+		Preload("CodeSnippetVersions.ProgramLanguage").
+		Order("created_at desc").
+		Find(&code_snippets)
 
 	if len(code_snippets) == 0 {
 		return c.Status(404).JSON(fiber.Map{
@@ -62,7 +67,12 @@ func GetSingleCodeSnippet(c *fiber.Ctx) error {
 	id := c.Params("id")
 
 	var code_snippet model.CodeSnippet
-	db.Where("code_snippet_id = ?", id).First(&code_snippet)
+	// TODO: Select only needed fields, exclude user.password :)
+	db.Preload("CodeSnippetVersions").
+		Preload("User").
+		Preload("CodeSnippetVersions.ProgramLanguage").
+		Preload("CodeSnippetVersions.ReviewComments").
+		Preload("CodeSnippetVersions.CodeSnippetRatings").Where("code_snippet_id = ?", id).First(&code_snippet)
 
 	if code_snippet.CodeSnippetID == uuid.Nil {
 		return c.Status(404).JSON(fiber.Map{
@@ -85,14 +95,6 @@ func GetSingleCodeSnippet(c *fiber.Ctx) error {
 func CreateCodeSnippet(c *fiber.Ctx) error {
 	db := database.DB.Db
 
-	user := new(model.User)
-	user.Username = GenerateRandomUsername(8)
-	if result := db.Create(&user); result.Error != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"status": "error", "message": "Could not create anonymous user", "data": result.Error,
-		})
-	}
-
 	code_snippet := new(model.CodeSnippet)
 	if err := c.BodyParser(code_snippet); err != nil {
 		return c.Status(400).JSON(fiber.Map{
@@ -100,12 +102,6 @@ func CreateCodeSnippet(c *fiber.Ctx) error {
 		})
 	}
 
-	program_language := new(model.ProgramLanguage)
-	db.First(&program_language, code_snippet.ProgramLanguageID)
-
-	code_snippet.UserID = user.UserID
-	code_snippet.User = *user
-	code_snippet.ProgramLanguage = *program_language
 	if result := db.Create(&code_snippet); result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"status": "error", "message": "Could not create code snippet", "data": result.Error,

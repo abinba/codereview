@@ -34,6 +34,7 @@ DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=postgres
 DB_NAME=codereview
+JWT_SECRET_KEY=secret
 ```
 
 And ensure that you have `db.env` file with the following contents (input your own password):
@@ -61,7 +62,7 @@ atlas migrate diff --env gorm
 To apply the migration, use:
 
 ```
-atlas migrate apply -u "postgres://postgres:postgres@localhost:5432/codereview"
+atlas migrate apply -u "postgres://postgres:postgres@localhost:5432/codereview?sslmode=disable"
 ```
 
 To downgrade:

@@ -8,5 +8,5 @@ import (
 // @Description ProgramLanguage is the model representing a programming language in the system.
 type ProgramLanguage struct {
 	ProgramLanguageID uuid.UUID `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	Name              string
+	Name              string    `gorm:"not null"`
 }

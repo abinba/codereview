@@ -1,14 +1,42 @@
 package handler
 
 import (
+	"github.com/abinba/codereview/middleware"
 	"github.com/abinba/codereview/database"
 	"github.com/abinba/codereview/model"
+	"github.com/abinba/codereview/repo"
+	"github.com/asaskevich/govalidator"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
 	Username string `json:"username" example:"johndoe" description:"The username of the user"`
+	Password string `json:"password" description:"The password of the user"`
+}
+
+
+func validateUser(username, password string) (bool, string) {
+	if len(username) < 3 || len(username) > 30 || !govalidator.IsAlphanumeric(username) {
+		return false, "Username must be 3-30 characters long and alphanumeric."
+	}
+	passwordRequirements := map[string]string{
+		"uppercase": `[A-Z]`,             // Use at least one uppercase letter
+		"lowercase": `[a-z]`,             // Use at least one lowercase letter
+		"number":    `[0-9]`,             // Use at least one digit
+		"special":   `[^A-Za-z0-9]`,      // Use at least one special character
+	}
+	for key, regexStr := range passwordRequirements {
+		matched := govalidator.StringMatches(password, regexStr)
+		if !matched {
+			return false, "Password must contain at least one " + key
+		}
+	}
+	if len(password) < 8 {
+		return false, "Password must be at least 8 characters long."
+	}
+	return true, ""
 }
 
 // CreateUser godoc
@@ -19,43 +47,84 @@ type User struct {
 // @Produce  json
 // @Param user body User true "User to create" example("{\"username\": \"John Doe\"}")
 // @Success 201 {object} model.User
-// @Router /api/v1/user/ [post]
+// @Router /api/v1/register/ [post]
 func CreateUser(c *fiber.Ctx) error {
 	db := database.DB.Db
-	user := new(model.User)
+	credentials := new(User)
 
-	err := c.BodyParser(user)
+	err := c.BodyParser(credentials)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Something's wrong with your input", "data": err})
 	}
 
-	err = db.Create(&user).Error // TODO: hash passwords
+	valid, message := validateUser(credentials.Username, credentials.Password)
+	if !valid {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": message})
+	}
+
+	user := new(model.User)
+	err = db.Where("username = ?", credentials.Username).First(&user).Error
+	if err == nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "User already exists"})
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(credentials.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Failed to hash password", "data": err})
+	}
+
+	credentials.Password = string(hashedPassword)
+
+	err = repo.NewUserRepository(db).CreateUser(
+		credentials.Username, credentials.Password,
+	)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Could not create user", "data": err})
 	}
 
-	return c.Status(201).JSON(fiber.Map{"status": "success", "message": "User has been created", "data": user})
+	return c.Status(201).JSON(fiber.Map{"status": "success", "message": "User has been created"})
 }
 
-// GetAllUsers godoc
-// @Summary Get all users
-// @Description get details of all users
+// Login godoc
+// @Summary User login
+// @Description login a user by username and password
 // @Tags users
 // @Accept  json
 // @Produce  json
-// @Success 200 {array} model.User
-// @Router /api/v1/user/ [get]
-func GetAllUsers(c *fiber.Ctx) error {
+// @Param credentials body User true "Login credentials" example("{\"username\": \"johndoe\", \"password\": \"p@ssword123\"}")
+// @Success 200 {string} string "login successful"
+// @Failure 401 {string} string "invalid credentials"
+// @Router /api/v1/login [post]
+func Login(c *fiber.Ctx) error {
 	db := database.DB.Db
+	credentials := new(User)
 
-	var users []model.User
-	db.Find(&users)
-
-	if len(users) == 0 {
-		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Users not found", "data": nil})
+	if err := c.BodyParser(credentials); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid input", "data": err})
 	}
 
-	return c.Status(200).JSON(fiber.Map{"status": "sucess", "message": "Users Found", "data": users})
+	valid, message := validateUser(credentials.Username, credentials.Password)
+	if !valid {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": message})
+	}
+
+	user := new(model.User)
+	err := db.Where("username = ?", credentials.Username).First(&user).Error
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "error", "message": "User not found"})
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password))
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Invalid credentials"})
+	}
+
+	token, err := middleware.GenerateJWT(user.UserID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Failed to generate token", "data": err})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "Login successful", "token": token})
 }
 
 // GetSingleUser godoc
@@ -138,7 +207,7 @@ func DeleteUserByID(c *fiber.Ctx) error {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil})
 	}
 
-	err := db.Delete(&user, "id = ?", id).Error
+	err := db.Delete(&user, "user_id = ?", id).Error
 
 	if err != nil {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Failed to delete user", "data": nil})
