@@ -123,7 +123,8 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Failed to generate token", "data": err})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "Login successful", "token": token})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": "success", "message": "Login successful", "token": token, "username": credentials.Username, "user_id": user.UserID})
 }
 
 // GetSingleUser godoc

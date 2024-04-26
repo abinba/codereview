@@ -28,7 +28,7 @@ func GetUserCodeSnippets(c *fiber.Ctx) error {
 	}
 
 	var code_snippets []model.CodeSnippet
-	db.Where("user_id = ?", userUUID).Preload("CodeSnippetVersions").Preload("User").Find(&code_snippets)
+	db.Where("user_id = ?", userUUID).Preload("CodeSnippetVersions").Preload("CodeSnippetVersions.ProgramLanguage").Preload("User").Find(&code_snippets)
 
 	if len(code_snippets) == 0 {
 		return c.Status(404).JSON(fiber.Map{
