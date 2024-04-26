@@ -6,15 +6,15 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// CreateCodeSnippet godoc
-// @Summary Create a code snippet
-// @Description Create a code snippet
-// @Tags Code Snippets
+// CreateCodeSnippetVersion godoc
+// @Summary Create a code snippet version
+// @Description Create a code snippet version
+// @Tags Code Snippets Versions
 // @Accept  json
 // @Produce  json
-// @Param code_snippet body CodeSnippetVersion true "Code Snippet information to create"
-// @Success 201 {object} model.CodeSnippet
-// @Router /api/v1/code_snippet/ [post]
+// @Param code_snippet body model.CodeSnippetVersion true "Code Snippet information to create"
+// @Success 201 {object} model.CodeSnippetVersion
+// @Router /api/v1/code_snippet_version/ [post]
 func CreateCodeSnippetVersion(c *fiber.Ctx) error {
 	db := database.DB.Db
 

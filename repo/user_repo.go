@@ -6,17 +6,17 @@ import (
 )
 
 type UserRepository struct {
-    db *gorm.DB
+	db *gorm.DB
 }
 
 func NewUserRepository(db *gorm.DB) *UserRepository {
-    return &UserRepository{db: db}
+	return &UserRepository{db: db}
 }
 
 func (repo *UserRepository) CreateUser(username, password string) error {
-    user := model.User{
-        Username: username,
-        Password: password,
-    }
-    return repo.db.Create(&user).Error
+	user := model.User{
+		Username: username,
+		Password: password,
+	}
+	return repo.db.Create(&user).Error
 }

@@ -16,6 +16,8 @@ Features List:
 - Code Snippets: Added GET /api/v1/user_code_snippets to retrieve user code snippets
 - Code Snippets: Added POST /api/v1/review_comment to create reviews for code snippets
 - Code Snippets: Added POST /api/v1/code_snippet_version to create a new version of the code snippet
+- Notifications: Aded GET /api/v1/notifications/:user_id to get all user notifications
+- Notifications: When POST /api/v1/review_comment and the code snippet being reviewed has an owner, the notification is added. TODO: use message queue and worker in the future for non-blocking.
 - Authorization: Added POST /api/v1/register and POST /api/v1/login
 - Authorization: Added JWT token generation and check for login / signup
 - Authorization: Added validation of username and password

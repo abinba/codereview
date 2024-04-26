@@ -135,6 +135,115 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/code_snippet_version/": {
+            "post": {
+                "description": "Create a code snippet version",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Code Snippets Versions"
+                ],
+                "summary": "Create a code snippet version",
+                "parameters": [
+                    {
+                        "description": "Code Snippet information to create",
+                        "name": "code_snippet",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.CodeSnippetVersion"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.CodeSnippetVersion"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/login": {
+            "post": {
+                "description": "login a user by username and password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "User login",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "login successful",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid credentials",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/notifications/{id}": {
+            "get": {
+                "description": "Retrieve all notifications for a specific user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Get user notifications",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Notification"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/program_language/": {
             "get": {
                 "description": "Get all program languages",
@@ -193,31 +302,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user/": {
-            "get": {
-                "description": "get details of all users",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Get all users",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.User"
-                            }
-                        }
-                    }
-                }
-            },
+        "/api/v1/register/": {
             "post": {
                 "description": "create a new user with the provided information",
                 "consumes": [
@@ -246,6 +331,40 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/model.User"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/review_comment/": {
+            "post": {
+                "description": "Adds a new review comment to the database.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Review Comments"
+                ],
+                "summary": "Create a review comment",
+                "parameters": [
+                    {
+                        "description": "Review comment information to create",
+                        "name": "review_comment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ReviewComment"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.ReviewComment"
                         }
                     }
                 }
@@ -348,6 +467,41 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/user_code_snippets/{user_id}": {
+            "get": {
+                "description": "Retrieve all code snippets created by a specific user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Code Snippets"
+                ],
+                "summary": "Get user's code snippets",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.CodeSnippet"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -363,10 +517,10 @@ const docTemplate = `{
                 "is_private": {
                     "type": "boolean"
                 },
-                "program_language_id": {
+                "title": {
                     "type": "string"
                 },
-                "text": {
+                "user_id": {
                     "type": "string"
                 }
             }
@@ -382,6 +536,9 @@ const docTemplate = `{
         "handler.User": {
             "type": "object",
             "properties": {
+                "password": {
+                    "type": "string"
+                },
                 "username": {
                     "type": "string",
                     "example": "johndoe"
@@ -395,10 +552,10 @@ const docTemplate = `{
                 "codeSnippetID": {
                     "type": "string"
                 },
-                "codeSnippetRatings": {
+                "codeSnippetVersions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.CodeSnippetRating"
+                        "$ref": "#/definitions/model.CodeSnippetVersion"
                     }
                 },
                 "createdAt": {
@@ -412,6 +569,66 @@ const docTemplate = `{
                 },
                 "isPrivate": {
                     "type": "boolean"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.User"
+                },
+                "userID": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CodeSnippetRating": {
+            "description": "CodeSnippetRating is the model representing a rating for a code snippet.",
+            "type": "object",
+            "properties": {
+                "codeSnippetRatingID": {
+                    "type": "string"
+                },
+                "codeSnippetVersionID": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.User"
+                },
+                "userID": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CodeSnippetVersion": {
+            "description": "CodeSnippetVersion is the model representing a code snippet version of the code snippet in the system.",
+            "type": "object",
+            "properties": {
+                "codeSnippetID": {
+                    "type": "string"
+                },
+                "codeSnippetRatings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.CodeSnippetRating"
+                    }
+                },
+                "codeSnippetVersionID": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
                 },
                 "programLanguage": {
                     "$ref": "#/definitions/model.ProgramLanguage"
@@ -430,35 +647,23 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/model.User"
-                },
-                "userID": {
-                    "type": "string"
                 }
             }
         },
-        "model.CodeSnippetRating": {
-            "description": "CodeSnippetRating is the model representing a rating for a code snippet.",
+        "model.Notification": {
+            "description": "Notification is a model for representing notifications for particular user in the system.",
             "type": "object",
             "properties": {
-                "codeSnippet": {
-                    "$ref": "#/definitions/model.CodeSnippet"
-                },
-                "codeSnippetID": {
-                    "type": "string"
-                },
-                "codeSnippetRatingID": {
-                    "type": "string"
-                },
                 "createdAt": {
                     "type": "string"
                 },
-                "rating": {
-                    "type": "integer"
+                "notificationID": {
+                    "type": "string"
                 },
-                "updatedAt": {
+                "notificationType": {
+                    "type": "string"
+                },
+                "text": {
                     "type": "string"
                 },
                 "user": {
@@ -485,10 +690,10 @@ const docTemplate = `{
             "description": "ReviewComment is the model representing a comment on a code snippet.",
             "type": "object",
             "properties": {
-                "codeSnippet": {
-                    "$ref": "#/definitions/model.CodeSnippet"
+                "codeSnippetVersion": {
+                    "$ref": "#/definitions/model.CodeSnippetVersion"
                 },
-                "codeSnippetID": {
+                "codeSnippetVersionID": {
                     "type": "string"
                 },
                 "commentID": {
@@ -497,8 +702,14 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "isGenerated": {
+                    "type": "boolean"
+                },
                 "line": {
                     "type": "integer"
+                },
+                "replyComment": {
+                    "$ref": "#/definitions/model.ReviewComment"
                 },
                 "replyCommentID": {
                     "type": "string"
@@ -527,8 +738,8 @@ const docTemplate = `{
                 "isActive": {
                     "type": "boolean"
                 },
-                "isAnonymous": {
-                    "type": "boolean"
+                "password": {
+                    "type": "string"
                 },
                 "updatedAt": {
                     "type": "string"

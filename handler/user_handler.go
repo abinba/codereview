@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/abinba/codereview/middleware"
 	"github.com/abinba/codereview/database"
+	"github.com/abinba/codereview/middleware"
 	"github.com/abinba/codereview/model"
 	"github.com/abinba/codereview/repo"
 	"github.com/asaskevich/govalidator"
@@ -16,16 +16,15 @@ type User struct {
 	Password string `json:"password" description:"The password of the user"`
 }
 
-
 func validateUser(username, password string) (bool, string) {
 	if len(username) < 3 || len(username) > 30 || !govalidator.IsAlphanumeric(username) {
 		return false, "Username must be 3-30 characters long and alphanumeric."
 	}
 	passwordRequirements := map[string]string{
-		"uppercase": `[A-Z]`,             // Use at least one uppercase letter
-		"lowercase": `[a-z]`,             // Use at least one lowercase letter
-		"number":    `[0-9]`,             // Use at least one digit
-		"special":   `[^A-Za-z0-9]`,      // Use at least one special character
+		"uppercase": `[A-Z]`,        // Use at least one uppercase letter
+		"lowercase": `[a-z]`,        // Use at least one lowercase letter
+		"number":    `[0-9]`,        // Use at least one digit
+		"special":   `[^A-Za-z0-9]`, // Use at least one special character
 	}
 	for key, regexStr := range passwordRequirements {
 		matched := govalidator.StringMatches(password, regexStr)
@@ -45,7 +44,7 @@ func validateUser(username, password string) (bool, string) {
 // @Tags users
 // @Accept  json
 // @Produce  json
-// @Param user body User true "User to create" example("{\"username\": \"John Doe\"}")
+// @Param user body User true "User to create" example("{\"username\": \"John Doe\", \"password\": \"nothing\"}")
 // @Success 201 {object} model.User
 // @Router /api/v1/register/ [post]
 func CreateUser(c *fiber.Ctx) error {

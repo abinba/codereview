@@ -1,8 +1,8 @@
 package router
 
 import (
-	"github.com/abinba/codereview/middleware"
 	"github.com/abinba/codereview/handler"
+	"github.com/abinba/codereview/middleware"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -27,7 +27,7 @@ func SetupRoutes(app *fiber.App) {
 	code_snippet.Get("/", handler.GetAllCodeSnippets)
 	code_snippet.Get("/:id", handler.GetSingleCodeSnippet)
 	code_snippet.Post("/", handler.CreateCodeSnippet)
-	
+
 	// Versions of the code snippet
 	code_snippet_version := v1.Group("/code_snippet_version")
 	code_snippet_version.Post("/", handler.CreateCodeSnippetVersion)
@@ -44,4 +44,8 @@ func SetupRoutes(app *fiber.App) {
 	program_language := v1.Group("/program_language")
 	program_language.Get("/", handler.GetAllProgramLanguages)
 	program_language.Post("/", handler.CreateProgramLanguage)
+
+	// Notifications
+	notifications := v1.Group("/notifications")
+	notifications.Get("/:id", middleware.JWTProtected(), handler.GetNotificationsByUserID)
 }

@@ -7,9 +7,9 @@ definitions:
         type: boolean
       is_private:
         type: boolean
-      program_language_id:
+      title:
         type: string
-      text:
+      user_id:
         type: string
     type: object
   handler.ProgramLanguageForm:
@@ -19,6 +19,8 @@ definitions:
     type: object
   handler.User:
     properties:
+      password:
+        type: string
       username:
         example: johndoe
         type: string
@@ -28,9 +30,9 @@ definitions:
     properties:
       codeSnippetID:
         type: string
-      codeSnippetRatings:
+      codeSnippetVersions:
         items:
-          $ref: '#/definitions/model.CodeSnippetRating'
+          $ref: '#/definitions/model.CodeSnippetVersion'
         type: array
       createdAt:
         type: string
@@ -40,6 +42,47 @@ definitions:
         type: boolean
       isPrivate:
         type: boolean
+      title:
+        type: string
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+      userID:
+        type: string
+    type: object
+  model.CodeSnippetRating:
+    description: CodeSnippetRating is the model representing a rating for a code snippet.
+    properties:
+      codeSnippetRatingID:
+        type: string
+      codeSnippetVersionID:
+        type: string
+      createdAt:
+        type: string
+      rating:
+        type: integer
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+      userID:
+        type: string
+    type: object
+  model.CodeSnippetVersion:
+    description: CodeSnippetVersion is the model representing a code snippet version
+      of the code snippet in the system.
+    properties:
+      codeSnippetID:
+        type: string
+      codeSnippetRatings:
+        items:
+          $ref: '#/definitions/model.CodeSnippetRating'
+        type: array
+      codeSnippetVersionID:
+        type: string
+      createdAt:
+        type: string
       programLanguage:
         $ref: '#/definitions/model.ProgramLanguage'
       programLanguageID:
@@ -52,25 +95,18 @@ definitions:
         type: string
       updatedAt:
         type: string
-      user:
-        $ref: '#/definitions/model.User'
-      userID:
-        type: string
     type: object
-  model.CodeSnippetRating:
-    description: CodeSnippetRating is the model representing a rating for a code snippet.
+  model.Notification:
+    description: Notification is a model for representing notifications for particular
+      user in the system.
     properties:
-      codeSnippet:
-        $ref: '#/definitions/model.CodeSnippet'
-      codeSnippetID:
-        type: string
-      codeSnippetRatingID:
-        type: string
       createdAt:
         type: string
-      rating:
-        type: integer
-      updatedAt:
+      notificationID:
+        type: string
+      notificationType:
+        type: string
+      text:
         type: string
       user:
         $ref: '#/definitions/model.User'
@@ -89,16 +125,20 @@ definitions:
   model.ReviewComment:
     description: ReviewComment is the model representing a comment on a code snippet.
     properties:
-      codeSnippet:
-        $ref: '#/definitions/model.CodeSnippet'
-      codeSnippetID:
+      codeSnippetVersion:
+        $ref: '#/definitions/model.CodeSnippetVersion'
+      codeSnippetVersionID:
         type: string
       commentID:
         type: string
       createdAt:
         type: string
+      isGenerated:
+        type: boolean
       line:
         type: integer
+      replyComment:
+        $ref: '#/definitions/model.ReviewComment'
       replyCommentID:
         type: string
       text:
@@ -117,8 +157,8 @@ definitions:
         type: string
       isActive:
         type: boolean
-      isAnonymous:
-        type: boolean
+      password:
+        type: string
       updatedAt:
         type: string
       userID:
@@ -209,6 +249,77 @@ paths:
       summary: Get a single code snippet
       tags:
       - Code Snippets
+  /api/v1/code_snippet_version/:
+    post:
+      consumes:
+      - application/json
+      description: Create a code snippet version
+      parameters:
+      - description: Code Snippet information to create
+        in: body
+        name: code_snippet
+        required: true
+        schema:
+          $ref: '#/definitions/model.CodeSnippetVersion'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.CodeSnippetVersion'
+      summary: Create a code snippet version
+      tags:
+      - Code Snippets Versions
+  /api/v1/login:
+    post:
+      consumes:
+      - application/json
+      description: login a user by username and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/handler.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: login successful
+          schema:
+            type: string
+        "401":
+          description: invalid credentials
+          schema:
+            type: string
+      summary: User login
+      tags:
+      - users
+  /api/v1/notifications/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all notifications for a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Notification'
+            type: array
+      summary: Get user notifications
+      tags:
+      - Notifications
   /api/v1/program_language/:
     get:
       consumes:
@@ -247,23 +358,7 @@ paths:
       summary: Create a program language
       tags:
       - Program Languages
-  /api/v1/user/:
-    get:
-      consumes:
-      - application/json
-      description: get details of all users
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.User'
-            type: array
-      summary: Get all users
-      tags:
-      - users
+  /api/v1/register/:
     post:
       consumes:
       - application/json
@@ -285,6 +380,28 @@ paths:
       summary: Create a new user
       tags:
       - users
+  /api/v1/review_comment/:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new review comment to the database.
+      parameters:
+      - description: Review comment information to create
+        in: body
+        name: review_comment
+        required: true
+        schema:
+          $ref: '#/definitions/model.ReviewComment'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.ReviewComment'
+      summary: Create a review comment
+      tags:
+      - Review Comments
   /api/v1/user/{id}:
     delete:
       consumes:
@@ -350,4 +467,27 @@ paths:
       summary: Update an existing user
       tags:
       - users
+  /api/v1/user_code_snippets/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all code snippets created by a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.CodeSnippet'
+            type: array
+      summary: Get user's code snippets
+      tags:
+      - User Code Snippets
 swagger: "2.0"

@@ -39,7 +39,7 @@ func Connect() {
 	db.Logger = logger.Default.LogMode(logger.Info)
 
 	log.Println("running migrations")
-	
+
 	DB = Dbinstance{
 		Db: db,
 	}
