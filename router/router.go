@@ -38,6 +38,7 @@ func SetupRoutes(app *fiber.App) {
 
 	// Review comments
 	review_comment := v1.Group("/review_comment")
+	review_comment.Get("/:id", handler.GetReviewComments)
 	review_comment.Post("/", handler.CreateReviewComment)
 
 	// Programming languages

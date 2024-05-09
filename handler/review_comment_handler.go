@@ -9,6 +9,39 @@ import (
 	"github.com/google/uuid"
 )
 
+
+// GetAllReviewComments godoc
+// @Summary Get all review comments
+// @Description Get all review comments
+// @Tags Review Comments
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} model.ReviewComment
+// @Router /api/v1/review_comment/ [get]
+func GetReviewComments(c *fiber.Ctx) error {
+	db := database.DB.Db
+
+	codeSnippetId := c.Params("id")
+	
+	var review_comments []model.ReviewComment
+
+	// TODO: exclude user.password :)
+	db.Preload("User").
+		Order("created_at desc").
+		Find(&review_comments, "code_snippet_version_id = ?", codeSnippetId)
+
+	if len(review_comments) == 0 {
+		return c.Status(404).JSON(fiber.Map{
+			"status": "error", "message": "Review comments not found", "data": nil,
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"status": "success", "message": "Review comments found", "data": review_comments,
+	})
+}
+
+
 // CreateReviewComment creates a review comment.
 // @Summary Create a review comment
 // @Description Adds a new review comment to the database.
@@ -20,7 +53,9 @@ import (
 // @Router /api/v1/review_comment/ [post]
 func CreateReviewComment(c *fiber.Ctx) error {
 	db := database.DB.Db
-
+	
+	// TODO: get the user id from the JWT token, not from the request.
+	// Or check if the user id from the JWT token is the same as the user id in the request.
 	review_comment := new(model.ReviewComment)
 	if err := c.BodyParser(review_comment); err != nil {
 		return c.Status(400).JSON(fiber.Map{
