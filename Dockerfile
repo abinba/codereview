@@ -13,12 +13,13 @@ FROM alpine:latest
 
 RUN apk --no-cache add curl ca-certificates
 
-WORKDIR /root/
-COPY --from=builder /app/main .
-COPY --from=builder /app/start.sh .
-COPY --from=builder /app/migrations ./migrations
-RUN chmod +x ./start.sh
+WORKDIR /app
+COPY --from=builder /app/main /app/main
+COPY --from=builder /app/start.sh /app/start.sh
+COPY --from=builder /app/migrations /app/migrations
+RUN chmod +x start.sh
+RUN dos2unix start.sh
 
 EXPOSE 8080
 
-CMD ["/bin/sh", "./start.sh"]
+CMD ["/bin/sh", "/app/start.sh"]
