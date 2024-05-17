@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"fmt"
-
 	"github.com/abinba/codereview/database"
 	"github.com/abinba/codereview/middleware"
 	"github.com/abinba/codereview/model"
