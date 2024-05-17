@@ -16,8 +16,13 @@ func main() {
 	app := fiber.New()
 
 	app.Use(logger.New())
-	app.Use(cors.New())
-
+	app.Use(cors.New(cors.Config{
+        AllowOrigins: "http://localhost:8080", // your Vue.js frontend URL
+        AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+        AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
+        AllowCredentials: true,
+    }))
+	
 	router.SetupRoutes(app)
 
 	app.Get("/swagger/*", swagger.HandlerDefault) // default
@@ -32,5 +37,5 @@ func main() {
 		return c.SendStatus(404)
 	})
 
-	app.Listen(":8080")
+	app.Listen(":3000")
 }

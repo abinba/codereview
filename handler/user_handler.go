@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/abinba/codereview/database"
 	"github.com/abinba/codereview/middleware"
 	"github.com/abinba/codereview/model"
@@ -9,9 +11,18 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
-type User struct {
+type UserLogin struct {
+	Username string `json:"username" example:"johndoe" description:"The username of the user"`
+	Password string `json:"password" description:"The password of the user"`
+}
+
+
+type UserSignup struct {
+	FirstName string `json:"first_name" example:"john"`
+	LastName string `json:"last_name" example:"doe"`
 	Username string `json:"username" example:"johndoe" description:"The username of the user"`
 	Password string `json:"password" description:"The password of the user"`
 }
@@ -49,7 +60,11 @@ func validateUser(username, password string) (bool, string) {
 // @Router /api/v1/register/ [post]
 func CreateUser(c *fiber.Ctx) error {
 	db := database.DB.Db
-	credentials := new(User)
+	if db == nil {
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Database connection not initialized"})
+	}
+
+	credentials := new(UserSignup)
 
 	err := c.BodyParser(credentials)
 	if err != nil {
@@ -62,9 +77,14 @@ func CreateUser(c *fiber.Ctx) error {
 	}
 
 	user := new(model.User)
+
 	err = db.Where("username = ?", credentials.Username).First(&user).Error
 	if err == nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "User already exists"})
+	}
+	
+	if err != gorm.ErrRecordNotFound {
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Database query error", "data": err})
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(credentials.Password), bcrypt.DefaultCost)
@@ -74,9 +94,12 @@ func CreateUser(c *fiber.Ctx) error {
 
 	credentials.Password = string(hashedPassword)
 
-	err = repo.NewUserRepository(db).CreateUser(
-		credentials.Username, credentials.Password,
-	)
+	userRepo := repo.NewUserRepository(db)
+	if userRepo == nil {
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Failed to initialize user repository"})
+	}
+
+	err = userRepo.CreateUser(credentials.Username, credentials.Password, credentials.FirstName, credentials.LastName)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Could not create user", "data": err})
 	}
@@ -96,7 +119,7 @@ func CreateUser(c *fiber.Ctx) error {
 // @Router /api/v1/login [post]
 func Login(c *fiber.Ctx) error {
 	db := database.DB.Db
-	credentials := new(User)
+	credentials := new(UserLogin)
 
 	if err := c.BodyParser(credentials); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid input", "data": err})
@@ -162,7 +185,8 @@ func GetSingleUser(c *fiber.Ctx) error {
 // @Router /api/v1/user/{id} [put]
 func UpdateUser(c *fiber.Ctx) error {
 	type updateUser struct {
-		Username string `json:"username"`
+		FirstName string `json:"first_name"`
+		LastName string `json:"last_name"`
 	}
 
 	db := database.DB.Db
@@ -182,7 +206,8 @@ func UpdateUser(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Something's wrong with your input", "data": err})
 	}
 
-	user.Username = updateUserData.Username
+	user.FirstName = updateUserData.FirstName
+	user.LastName = updateUserData.LastName
 	db.Save(&user)
 
 	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "users Found", "data": user})

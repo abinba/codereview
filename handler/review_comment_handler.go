@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-
 // GetAllReviewComments godoc
 // @Summary Get all review comments
 // @Description Get all review comments
@@ -69,14 +68,18 @@ func CreateReviewComment(c *fiber.Ctx) error {
 		})
 	}
 
+	var codeSnippetVersion model.CodeSnippetVersion
+	db.Model(&model.CodeSnippetVersion{}).Where("code_snippet_version_id = ?", review_comment.CodeSnippetVersionID).First(&codeSnippetVersion)
+
 	var codeSnippet model.CodeSnippet
-	db.Model(&model.CodeSnippet{}).Preload("CodeSnippetVersions", "code_snippet_version_id = ?", review_comment.CodeSnippetVersionID).First(&codeSnippet)
+	db.Model(&model.CodeSnippet{}).Where("code_snippet_id = ?", codeSnippetVersion.CodeSnippetID).First(&codeSnippet)
+
 	// TODO: use message queue and worker in the future for non-blocking.
 	if codeSnippet.UserID != nil && *codeSnippet.UserID != uuid.Nil {
 		notification := model.Notification{
 			UserID:           *codeSnippet.UserID,
 			NotificationType: "CodeReview",
-			Text:             "Your code has been reviewed! Check it out at My snippets",
+			Text:             "<a href='/code_snippet/" + codeSnippet.CodeSnippetID.String() + "'>Your code has been reviewed! Check it out!</a>",
 		}
 		if notifResult := db.Create(&notification); notifResult.Error != nil {
 			fmt.Println("Error creating notification")

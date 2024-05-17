@@ -72,6 +72,7 @@ func GetSingleCodeSnippet(c *fiber.Ctx) error {
 		Preload("User").
 		Preload("CodeSnippetVersions.ProgramLanguage").
 		Preload("CodeSnippetVersions.ReviewComments").
+		Preload("CodeSnippetVersions.ReviewComments.User").
 		Preload("CodeSnippetVersions.CodeSnippetRatings").Where("code_snippet_id = ?", id).First(&code_snippet)
 
 	if code_snippet.CodeSnippetID == uuid.Nil {

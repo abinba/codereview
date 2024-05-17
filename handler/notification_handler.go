@@ -28,7 +28,7 @@ func GetNotificationsByUserID(c *fiber.Ctx) error {
 	}
 
 	var notifications []model.Notification
-	db.Where("user_id = ?", userUUID).Preload("User").Find(&notifications)
+	db.Where("user_id = ?", userUUID).Preload("User").Order("created_at desc").Find(&notifications)
 
 	if len(notifications) == 0 {
 		return c.Status(404).JSON(fiber.Map{
